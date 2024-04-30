@@ -13,7 +13,7 @@ class WXJumpDataset(data.Dataset):
         self.transform = transform
         self.imglist = []
         self.imglabel = []
-        self.min_label = 0
+        self.min_label = 100
         self.max_label = 0
         self.loadimgs()
         self.num_samples = len(self.imglist)
@@ -30,8 +30,8 @@ class WXJumpDataset(data.Dataset):
             if self.imglabel[-1] > self.max_label:
                 self.max_label = label
 
-            # 归一化，将imglabel list归一化到-1~1之间
-            self.imglabel = [(x - self.min_label) / (self.max_label - self.min_label) * 2 - 1 for x in self.imglabel]
+        # 归一化，将imglabel list归一化到-1~1之间
+        self.imglabel = [(x - self.min_label) / (self.max_label - self.min_label) * 2 - 1 for x in self.imglabel]
             
 
     def __getitem__(self, index):
