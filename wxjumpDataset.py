@@ -23,8 +23,9 @@ class WXJumpDataset(data.Dataset):
             imgfilepath = os.path.join(self.imgpath, imgfile)
             self.imglist.append(imgfilepath)
             # 从文件名分割出标签，文件名：i-index-标签.png
-            label = int(imgfile.split('-')[-1].split('.')[0])
-            self.imglabel.append(round(float(label), 2))
+            label_png = imgfile.split('-')[-1]
+            label = float(label_png.split('.')[0] + "." + label_png.split('.')[1])
+            self.imglabel.append(round(label, 2))
             if  self.imglabel[-1] < self.min_label:
                 self.min_label = label
             if self.imglabel[-1] > self.max_label:
@@ -47,7 +48,7 @@ class WXJumpDataset(data.Dataset):
 
 # 写一段测试pytorch dataset有效性
 if __name__ == '__main__':
-    imgpath = r'D:\Projects\Python\wx_jump\test'
+    imgpath = r'F:\Projects\datasets\resnet\wx_jump\train'
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
     train_loader = torch.utils.data.DataLoader(
