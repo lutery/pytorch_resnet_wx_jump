@@ -18,6 +18,25 @@ class WXJumpDataset(data.Dataset):
         self.loadimgs()
         self.num_samples = len(self.imglist)
 
+    # 将标签设置为秒数
+    # def loadimgs(self):
+    #     for imgfile in os.listdir(self.imgpath):
+    #         imgfilepath = os.path.join(self.imgpath, imgfile)
+    #         self.imglist.append(imgfilepath)
+    #         # 从文件名分割出标签，文件名：i-index-标签.png
+    #         label_png = imgfile.split('-')[-1]
+    #         label = float(label_png.split('.')[0] + "." + label_png.split('.')[1])
+    #         self.imglabel.append(round(label, 2))
+    #         if  self.imglabel[-1] < self.min_label:
+    #             self.min_label = label
+    #         if self.imglabel[-1] > self.max_label:
+    #             self.max_label = label
+
+    #     # 归一化，将imglabel list归一化到-1~1之间
+    #     self.imglabel = [(x - self.min_label) / (self.max_label - self.min_label) * 2 - 1 for x in self.imglabel]
+        
+
+    # 将标签设置为one-hot编码
     def loadimgs(self):
         for imgfile in os.listdir(self.imgpath):
             imgfilepath = os.path.join(self.imgpath, imgfile)
@@ -25,14 +44,11 @@ class WXJumpDataset(data.Dataset):
             # 从文件名分割出标签，文件名：i-index-标签.png
             label_png = imgfile.split('-')[-1]
             label = float(label_png.split('.')[0] + "." + label_png.split('.')[1])
-            self.imglabel.append(round(label, 2))
+            self.imglabel.append(int(round(label, 2)))
             if  self.imglabel[-1] < self.min_label:
                 self.min_label = label
             if self.imglabel[-1] > self.max_label:
                 self.max_label = label
-
-        # 归一化，将imglabel list归一化到-1~1之间
-        self.imglabel = [(x - self.min_label) / (self.max_label - self.min_label) * 2 - 1 for x in self.imglabel]
             
 
     def __getitem__(self, index):
@@ -49,14 +65,14 @@ class WXJumpDataset(data.Dataset):
 # 写一段测试pytorch dataset有效性
 if __name__ == '__main__':
     imgpath = r'F:\Projects\datasets\resnet\wx_jump\train'
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+    # normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+    #                                  std=[0.229, 0.224, 0.225])
     train_loader = torch.utils.data.DataLoader(
         WXJumpDataset(imgpath= imgpath, transform=transforms.Compose([
             transforms.RandomHorizontalFlip(),
-            transforms.RandomCrop(32, 4),
+            # transforms.RandomCrop(32, 4),
             transforms.ToTensor(),
-            normalize,
+            # normalize,
         ])),
         batch_size=32, shuffle=True, pin_memory=True)
     

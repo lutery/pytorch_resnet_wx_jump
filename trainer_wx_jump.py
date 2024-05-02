@@ -34,7 +34,7 @@ parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N', help='mini-batch size (default: 128)')
-parser.add_argument('--lr', '--learning-rate', default=0.000001, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.001, type=float,
                     metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -107,7 +107,7 @@ def main():
         batch_size=32, shuffle=False, pin_memory=True)
 
     # define loss function (criterion) and optimizer
-    criterion = nn.MSELoss().cuda()
+    criterion = nn.CrossEntropyLoss().cuda()
 
     if args.half:
         model.half()
@@ -176,7 +176,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # measure data loading time
         data_time.update(time.time() - end)
 
-        target = target.cuda().float()
+        target = target.cuda()
         input_var = input.cuda()
         target_var = target
         if args.half:
@@ -194,7 +194,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
         output = output.float()
         loss = loss.float()
         # measure accuracy and record loss
+        prec1 = accuracy(output.data, target)[0]
         losses.update(loss.item(), input.size(0))
+        top1.update(prec1.item(), input.size(0))
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -204,9 +206,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
+                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                  'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'.format(
                       epoch, i, len(train_loader), batch_time=batch_time,
-                      data_time=data_time, loss=losses))
+                      data_time=data_time, loss=losses, top1=top1))
 
 
 def validate(val_loader, model, criterion):
@@ -238,7 +241,9 @@ def validate(val_loader, model, criterion):
             loss = loss.float()
 
             # measure accuracy and record loss
+            prec1 = accuracy(output.data, target)[0]
             losses.update(loss.item(), input.size(0))
+            top1.update(prec1.item(), input.size(0))
 
             # measure elapsed time
             batch_time.update(time.time() - end)
@@ -247,8 +252,10 @@ def validate(val_loader, model, criterion):
             if i % args.print_freq == 0:
                 print('Test: [{0}/{1}]\t'
                       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
-                          i, len(val_loader), batch_time=batch_time, loss=losses))
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                      'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'.format(
+                          i, len(val_loader), batch_time=batch_time, loss=losses,
+                          top1=top1))
 
     print(' * Prec@1 {top1.avg:.3f}'
           .format(top1=top1))
